@@ -1,8 +1,8 @@
 [Desktop Entry]
 Type=Application
-Exec=pcmanfm-qt --desktop --profile=lxqt
-TryExec=pcmanfm-qt
-OnlyShowIn=LXQt;
+TryExec=lwqt-pcmanfm
+Exec=/bin/sh -c "sleep 1; exec lwqt-pcmanfm --desktop --profile=lxqt"
+OnlyShowIn=LWQt;
 X-LXQt-Module=true
 
 #TRANSLATIONS_DIR=translations

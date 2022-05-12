@@ -1,6 +1,6 @@
 [Desktop Entry]
 Type=Application
-Exec=pcmanfm-qt %U
+Exec=lwqt-pcmanfm %U
 MimeType=inode/directory;
 Icon=system-file-manager
 Categories=FileManager;Utility;Core;Qt;

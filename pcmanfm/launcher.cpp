@@ -51,7 +51,7 @@ bool Launcher::openFolder(GAppLaunchContext* ctx, const Fm::FileInfoList& folder
         if(openWithDefaultFileManager_ && !openInNewTab_) {
             auto defaultApp = Fm::GAppInfoPtr{g_app_info_get_default_for_type("inode/directory", FALSE), false};
             if(defaultApp != nullptr
-               && strcmp(g_app_info_get_id(defaultApp.get()), "pcmanfm-qt.desktop") != 0) {
+               && strcmp(g_app_info_get_id(defaultApp.get()), "lwqt-pcmanfm.desktop")) {
                 for(const auto & folder : folderInfos) {
                     Fm::FileLauncher::launchWithDefaultApp(folder, ctx);
                 }
