@@ -1,3 +1,5 @@
+set(PROJECT lwqt-pcmanfm)
+
 set(pcmanfm_SRCS
     application.cpp
     pcmanfm.cpp
@@ -52,14 +54,14 @@ set(pcmanfm_UIS
     desktopentrydialog.ui
 )
 
-# add translation for pcmanfm-qt
+# add translation for lwqt-pcmanfm
 lxqt_translate_ts(QM_FILES
     UPDATE_TRANSLATIONS ${UPDATE_TRANSLATIONS}
     SOURCES ${pcmanfm_SRCS} ${pcmanfm_UIS}
     INSTALL_DIR "${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME}/translations"
 )
 
-# translate desktop entry files for pcmanfm-qt and desktop preferences
+# translate desktop entry files for lwqt-pcmanfm and desktop preferences
 lxqt_translate_desktop(DESKTOP_FILES
     SOURCES
         pcmanfm-qt.desktop.in
@@ -67,7 +69,7 @@ lxqt_translate_desktop(DESKTOP_FILES
     USE_YAML
 )
 
-add_executable(pcmanfm-qt
+add_executable(${PROJECT}
     ${pcmanfm_SRCS}
     ${pcmanfm_DBUS_SRCS}
     ${pcmanfm_UIS}
@@ -75,30 +77,36 @@ add_executable(pcmanfm-qt
     ${DESKTOP_FILES}
 )
 
-target_compile_definitions(pcmanfm-qt
+target_compile_definitions(${PROJECT}
     PRIVATE
-        PCMANFM_DATA_DIR="${CMAKE_INSTALL_PREFIX}/share/pcmanfm-qt"
+        PCMANFM_DATA_DIR="${CMAKE_INSTALL_PREFIX}/share/${PROJECT}"
         PCMANFM_QT_VERSION="${PCMANFM_QT_VERSION}"
         LIBFM_DATA_DIR="${PKG_FM_PREFIX}/share/libfm"
 )
 
-target_include_directories(pcmanfm-qt
+target_include_directories(${PROJECT}
     PRIVATE
         "${Qt5Gui_PRIVATE_INCLUDE_DIRS}"
 )
 
-target_link_libraries(pcmanfm-qt
-    Qt5::X11Extras
+target_link_libraries(${PROJECT}
     Qt5::Widgets
     Qt5::DBus
+    KF5::WindowSystem
     fm-qt
 )
 
-install(TARGETS pcmanfm-qt RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(TARGETS ${PROJECT} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-# install a desktop entry file for pcmanfm-qt and desktop preferences
-install(FILES ${DESKTOP_FILES} DESTINATION "${CMAKE_INSTALL_DATADIR}/applications"
-)
+# install a desktop entry file for lwqt-pcmanfm and desktop preferences
+foreach(DESKTOP_FILE ${DESKTOP_FILES})
+    get_filename_component(DESKTOP_FILENAME ${DESKTOP_FILE} NAME)
+    install(FILES
+            ${DESKTOP_FILE}
+            DESTINATION "${CMAKE_INSTALL_DATADIR}/applications"
+            RENAME "lwqt-${DESKTOP_FILENAME}"
+    )
+endforeach()
 
 # prevent the generated files from being deleted during make clean
 set_directory_properties(PROPERTIES CLEAN_NO_CUSTOM true)

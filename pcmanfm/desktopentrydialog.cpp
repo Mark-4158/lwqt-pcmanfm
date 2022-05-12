@@ -133,7 +133,7 @@ void DesktopEntryDialog::accept() {
            || cmd.startsWith(QLatin1String("network:///"))
            || cmd.startsWith(QLatin1String("trash:///"))
            || cmd.startsWith(QLatin1String("menu://applications/"))) {
-            cmd = QLatin1String("pcmanfm-qt ") + cmd;
+            cmd = QLatin1String("lwqt-pcmanfm ") + cmd;
             g_key_file_set_string(kf, "Desktop Entry", "Exec", cmd.toStdString().c_str());
             g_key_file_set_string(kf, "Desktop Entry", "Type", "Application");
         }

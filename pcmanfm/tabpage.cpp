@@ -338,11 +338,12 @@ void TabPage::onUiUpdated() {
             }
         }
         filesToSelect_.clear();
-        if(folderView_->selectFiles(infos)) {
+        folderView_->selectFiles(infos);
+        if(auto *model = folderView_->selectionModel()) {
             scrolled = true; // scrolling is done by FolderView::selectFiles()
-            QModelIndexList indexes = folderView_->selectionModel()->selectedIndexes();
+            QModelIndexList indexes = model->selectedIndexes();
             if(!indexes.isEmpty()) {
-                folderView_->selectionModel()->setCurrentIndex(indexes.first(), QItemSelectionModel::NoUpdate);
+                model->setCurrentIndex(indexes.first(), QItemSelectionModel::NoUpdate);
             }
         }
     }
@@ -404,13 +405,11 @@ void TabPage::onFilesAdded(Fm::FileInfoList files) {
         if(!selectionTimer_) {
             selectionTimer_ = new QTimer (this);
             selectionTimer_->setSingleShot(true);
-            if(folderView_->selectFiles(files, false)) {
-                selectionTimer_->start(200);
-            }
+            folderView_->selectFiles(files, false);
         }
-        else if(folderView_->selectFiles(files, selectionTimer_->isActive())) {
-            selectionTimer_->start(200);
-        }
+        else
+            folderView_->selectFiles(files, selectionTimer_->isActive());
+        selectionTimer_->start(200);
     }
     else if (!folderView_->selectionModel()->currentIndex().isValid()) {
         // set the first item as current if there is no current item

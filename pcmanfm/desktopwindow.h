@@ -200,6 +200,9 @@ private:
     GFileMonitor* trashMonitor_;
 
     QStringList filesToTrust_;
+
+protected:
+    WId mNewWinId;
 };
 
 }

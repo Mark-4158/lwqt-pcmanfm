@@ -58,10 +58,8 @@
 #include "bulkrename.h"
 #include "desktopentrydialog.h"
 
-#include <QX11Info>
 #include <QScreen>
-#include <xcb/xcb.h>
-#include <X11/Xlib.h>
+#include <KWindowSystem/KWindowSystem>
 
 #define MIN_SLIDE_INTERVAL 5*60000 // 5 min
 #define MAX_SLIDE_INTERVAL (24*60+55)*60000 // 24 h and 55 min
@@ -288,7 +286,7 @@ void DesktopWindow::updateShortcutsFromSettings(Settings& settings) {
 void DesktopWindow::createTrashShortcut(int items) {
     GKeyFile* kf = g_key_file_new();
     g_key_file_set_string(kf, "Desktop Entry", "Type", "Application");
-    g_key_file_set_string(kf, "Desktop Entry", "Exec", "pcmanfm-qt trash:///");
+    g_key_file_set_string(kf, "Desktop Entry", "Exec", "lwqt-pcmanfm trash:///");
     // icon
     const char* icon_name = items > 0 ? "user-trash-full" : "user-trash";
     g_key_file_set_string(kf, "Desktop Entry", "Icon", icon_name);
@@ -322,7 +320,7 @@ void DesktopWindow::createHomeShortcut() {
     }
     else {
         g_key_file_set_string(kf, "Desktop Entry", "Type", "Application");
-        g_key_file_set_string(kf, "Desktop Entry", "Exec", Fm::CStrPtr(g_strconcat("pcmanfm-qt ", Fm::FilePath::homeDir().toString().get(), nullptr)).get());
+        g_key_file_set_string(kf, "Desktop Entry", "Exec", Fm::CStrPtr(g_strconcat("lwqt-pcmanfm ", Fm::FilePath::homeDir().toString().get(), nullptr)).get());
     }
     g_key_file_set_string(kf, "Desktop Entry", "Icon", "user-home");
     g_key_file_set_string(kf, "Desktop Entry", "Name", g_get_user_name());
@@ -336,7 +334,7 @@ void DesktopWindow::createHomeShortcut() {
 void DesktopWindow::createComputerShortcut() {
     GKeyFile* kf = g_key_file_new();
     g_key_file_set_string(kf, "Desktop Entry", "Type", "Application");
-    g_key_file_set_string(kf, "Desktop Entry", "Exec", "pcmanfm-qt computer:///");
+    g_key_file_set_string(kf, "Desktop Entry", "Exec", "lwqt-pcmanfm computer:///");
     g_key_file_set_string(kf, "Desktop Entry", "Icon", "computer");
     const QString name = tr("Computer");
     g_key_file_set_string(kf, "Desktop Entry", "Name", name.toStdString().c_str());
@@ -350,7 +348,7 @@ void DesktopWindow::createComputerShortcut() {
 void DesktopWindow::createNetworkShortcut() {
     GKeyFile* kf = g_key_file_new();
     g_key_file_set_string(kf, "Desktop Entry", "Type", "Application");
-    g_key_file_set_string(kf, "Desktop Entry", "Exec", "pcmanfm-qt network:///");
+    g_key_file_set_string(kf, "Desktop Entry", "Exec", "lwqt-pcmanfm network:///");
     g_key_file_set_string(kf, "Desktop Entry", "Icon", "folder-network");
     const QString name = tr("Network");
     g_key_file_set_string(kf, "Desktop Entry", "Name", name.toStdString().c_str());
@@ -426,7 +424,7 @@ bool DesktopWindow::isTrashCan(std::shared_ptr<const Fm::FileInfo> file) const {
     if(file && file->isDesktopEntry() && trashMonitor_) {
         const QString fileName = QString::fromStdString(file->name());
         const char* execStr = fileName == QLatin1String("trash-can.desktop")
-                                ? "pcmanfm-qt trash:///" : nullptr;
+                                ? "lwqt-pcmanfm trash:///" : nullptr;
         if(execStr) {
             GKeyFile* kf = g_key_file_new();
             if(g_key_file_load_from_file(kf, file->path().toString().get(), G_KEY_FILE_NONE, nullptr)) {
@@ -1186,13 +1184,11 @@ void DesktopWindow::onFilesAdded(const Fm::FileInfoList files) {
         if(!selectionTimer_) {
             selectionTimer_ = new QTimer (this);
             selectionTimer_->setSingleShot(true);
-            if(selectFiles(files, false)) {
-                selectionTimer_->start(200);
-            }
+            selectFiles(files, false);
         }
-        else if(selectFiles(files, selectionTimer_->isActive())) {
-            selectionTimer_->start(200);
-        }
+        else
+            selectFiles(files, selectionTimer_->isActive());
+        selectionTimer_->start(200);
     }
 }
 
@@ -1292,11 +1288,11 @@ void DesktopWindow::trustOurDesktopShortcut(std::shared_ptr<const Fm::FileInfo> 
     // we need this in advance because we get execStr with a nested ternary operator below
     auto homeExec = isHome && settings.openWithDefaultFileManager()
                         ? Fm::FilePath::homeDir().toString()
-                        : Fm::CStrPtr(g_strconcat("pcmanfm-qt ", Fm::FilePath::homeDir().toString().get(), nullptr));
+                        : Fm::CStrPtr(g_strconcat("lwqt-pcmanfm ", Fm::FilePath::homeDir().toString().get(), nullptr));
     const char* execStr = isHome ? homeExec.get() :
-                          fileName == QLatin1String("trash-can.desktop") && ds.contains(QLatin1String("Trash")) ? "pcmanfm-qt trash:///" :
-                          fileName == QLatin1String("computer.desktop") && ds.contains(QLatin1String("Computer")) ? "pcmanfm-qt computer:///" :
-                          fileName == QLatin1String("network.desktop") && ds.contains(QLatin1String("Network")) ? "pcmanfm-qt network:///" : nullptr;
+                          fileName == QLatin1String("trash-can.desktop") && ds.contains(QLatin1String("Trash")) ? "lwqt-pcmanfm trash:///" :
+                          fileName == QLatin1String("computer.desktop") && ds.contains(QLatin1String("Computer")) ? "lwqt-pcmanfm computer:///" :
+                          fileName == QLatin1String("network.desktop") && ds.contains(QLatin1String("Network")) ? "lwqt-pcmanfm network:///" : nullptr;
     if(execStr) {
         GKeyFile* kf = g_key_file_new();
         if(g_key_file_load_from_file(kf, file->path().toString().get(), G_KEY_FILE_NONE, nullptr)) {
@@ -1816,23 +1812,16 @@ QModelIndex DesktopWindow::navigateWithKey(int key, Qt::KeyboardModifiers modifi
 
 bool DesktopWindow::event(QEvent* event) {
     switch(event->type()) {
-    case QEvent::WinIdChange: {
-        //qDebug() << "winid change:" << effectiveWinId();
-        if(effectiveWinId() == 0) {
-            break;
-        }
-        // set freedesktop.org EWMH hints properly
-        if(QX11Info::isPlatformX11() && QX11Info::connection()) {
-            xcb_connection_t* con = QX11Info::connection();
-            const char* atom_name = "_NET_WM_WINDOW_TYPE_DESKTOP";
-            xcb_atom_t atom = xcb_intern_atom_reply(con, xcb_intern_atom(con, 0, strlen(atom_name), atom_name), nullptr)->atom;
-            const char* prop_atom_name = "_NET_WM_WINDOW_TYPE";
-            xcb_atom_t prop_atom = xcb_intern_atom_reply(con, xcb_intern_atom(con, 0, strlen(prop_atom_name), prop_atom_name), nullptr)->atom;
-            xcb_atom_t XA_ATOM = 4;
-            xcb_change_property(con, XCB_PROP_MODE_REPLACE, effectiveWinId(), prop_atom, XA_ATOM, 32, 1, &atom);
+    case QEvent::WinIdChange:
+        mNewWinId = effectiveWinId();
+        break;
+    case QEvent::PolishRequest:
+        if (mNewWinId) {
+            KWindowSystem::setType(mNewWinId, NET::Desktop);
+            KWindowSystem::setState(mNewWinId, NET::Sticky | NET::KeepBelow);
+            mNewWinId = false;
         }
         break;
-    }
 #undef FontChange // FontChange is defined in the headers of XLib and clashes with Qt, let's undefine it.
     case QEvent::StyleChange:
     case QEvent::FontChange:
