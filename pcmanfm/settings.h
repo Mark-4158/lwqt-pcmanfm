@@ -981,26 +981,6 @@ public:
         searchhHidden_ = hidden;
     }
 
-    int maxSearchHistory() const {
-        return maxSearchHistory_;
-    }
-
-    void setMaxSearchHistory(int max);
-
-    void clearSearchHistory();
-
-    QStringList namePatterns() const {
-        return namePatterns_;
-    }
-
-    void addNamePattern(const QString& pattern);
-
-    QStringList contentPatterns() const {
-        return contentPatterns_;
-    }
-
-    void addContentPattern(const QString& pattern);
-
     QList<int> getCustomColumnWidths() const {
         QList<int> l;
         for(auto width : qAsConst(customColumnWidths_)) {
@@ -1166,9 +1146,6 @@ private:
     bool searchContentRegexp_;
     bool searchRecursive_;
     bool searchhHidden_;
-    int maxSearchHistory_;
-    QStringList namePatterns_;
-    QStringList contentPatterns_;
 
     // detailed list columns
     QList<QVariant> customColumnWidths_;

@@ -1,7 +1,7 @@
 [Desktop Entry]
 Type=Application
 TryExec=lwqt-pcmanfm
-Exec=/bin/sh -c "sleep 1; exec lwqt-pcmanfm --desktop --profile=lxqt"
+Exec=/bin/sh -c "sleep 1; QT_QPA_PLATFORMTHEME=lxqt exec lwqt-pcmanfm --desktop --profile=lxqt"
 OnlyShowIn=LWQt;
 X-LXQt-Module=true
 
